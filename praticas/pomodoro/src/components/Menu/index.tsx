@@ -1,82 +1,99 @@
+import { useEffect, useState } from 'react';
 import {
-  HistoryIcon,
-  HouseIcon,
-  MoonIcon,
-  SettingsIcon,
-  SunIcon,
+    HistoryIcon,
+    HouseIcon,
+    LogOutIcon,
+    MoonIcon,
+    SettingsIcon,
+    SunIcon,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import styles from './styles.module.css';
-import { useState, useEffect } from 'react';
+
 import { RouterLink } from '../RouterLink';
+import { useAuthContext } from '../../contexts/TaskContext/AuthContext';
 
 type AvailableThemes = 'dark' | 'light';
 
 export function Menu() {
-  const [theme, setTheme] = useState<AvailableThemes>(() => {
-    const storageTheme =
-      (localStorage.getItem('theme') as AvailableThemes) || 'dark';
-    return storageTheme;
-  });
+    const navigate = useNavigate();
+    const authContext = useAuthContext();
 
-  const nextThemeIcon = {
-    dark: <SunIcon />,
-    light: <MoonIcon />,
-  };
+    const [theme, setTheme] = useState<AvailableThemes>(() => {
+        const storageTheme =
+            (localStorage.getItem('theme') as AvailableThemes) || 'dark';
 
-  function handleThemeChange(
-    event: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
-  ) {
-    event.preventDefault();
-
-    setTheme(prevTheme => {
-      const nextTheme = prevTheme === 'dark' ? 'light' : 'dark';
-      return nextTheme;
+        return storageTheme;
     });
-  }
 
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+    const nextThemeIcon = {
+        dark: <SunIcon />,
+        light: <MoonIcon />,
+    };
 
-  return (
-    <nav className={styles.menu}>
-      <RouterLink
-        className={styles.menuLink}
-        href='/'
-        aria-label='Ir para a Home'
-        title='Ir para a Home'
-      >
-        <HouseIcon />
-      </RouterLink>
+    function handleThemeChange(
+        event: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
+    ) {
+        event.preventDefault();
 
-      <RouterLink
-        className={styles.menuLink}
-        href='/history/'
-        aria-label='Ver Histórico'
-        title='Ver Histórico'
-      >
-        <HistoryIcon />
-      </RouterLink>
+        setTheme(currentTheme => {
+            const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
-      <RouterLink
-        className={styles.menuLink}
-        href='/settings/'
-        aria-label='Configurações'
-        title='Configurações'
-      >
-        <SettingsIcon />
-      </RouterLink>
+            localStorage.setItem('theme', nextTheme);
 
-      <a
-        className={styles.menuLink}
-        href='#'
-        aria-label='Mudar Tema'
-        title='Mudar Tema'
-        onClick={handleThemeChange}
-      >
-        {nextThemeIcon[theme]}
-      </a>
-    </nav>
-  );
+            return nextTheme;
+        });
+    }
+
+    function handleLogout(
+        event: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
+    ) {
+        event.preventDefault();
+
+        if (authContext) {
+            authContext.logout();
+        }
+        navigate('/');
+    }
+
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+    }, [theme]);
+
+    return (
+        <nav className={styles.menu}>
+            <RouterLink href="/home" aria-label="Ir para home" title="Home">
+                <HouseIcon />
+            </RouterLink>
+
+            <RouterLink
+                href="/history"
+                aria-label="Ver histórico"
+                title="Histórico"
+            >
+                <HistoryIcon />
+            </RouterLink>
+
+            <RouterLink
+                href="#"
+                aria-label="Alterar tema"
+                title="Alterar tema"
+                onClick={handleThemeChange}
+            >
+                {nextThemeIcon[theme]}
+            </RouterLink>
+
+            <RouterLink
+                href="/settings"
+                aria-label="Configurações"
+                title="Configurações"
+            >
+                <SettingsIcon />
+            </RouterLink>
+
+            <RouterLink href="#" aria-label="Sair" title="Sair" onClick={handleLogout}>
+                <LogOutIcon />
+            </RouterLink>
+        </nav>
+    );
 }
